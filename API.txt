@@ -1,8 +1,8 @@
 curl --request POST \
       --url http://deep-image.ai/rest_api/deep_image/transform \
       --header 'content-type: multipart/form-data; boundary=---011000010111000001101001' \
-      --header 'x-api-key: e76d27f0-ad9e-11ea-8ece-d36342464aa9' \
-      --form donald.jpg=@/path_to_local_file \
+      --header 'x-api-key: <key value>' \
+      --form <filename>=@/path_to_local_file \
       --form transformations=zoom2 \
       --form transformations=jpeg
 
@@ -11,5 +11,5 @@ curl --request POST \
 curl --request GET \
       --url https://deep-image.ai/rest_api/deep_image/result/<job> \
       --header 'content-type: multipart/form-data; boundary=---011000010111000001101001' \
-      --header 'x-api-key: e76d27f0-ad9e-11ea-8ece-d36342464aa9' \
+      --header 'x-api-key: <key value>' \
       --header 'x-application-name: deep_image'
