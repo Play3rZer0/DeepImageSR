@@ -1,0 +1,187 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: neuro_api
+servers:
+  - url: 'https://aime.teonite.com/'
+    description: Main server
+  - url: 'http://localhost'
+    description: Local server
+paths:
+  /rest_api/deep_image/transform:
+    post:
+      summary: Schedules a job to perform zoom or remove jpg artifacts operation
+      parameters:
+        - $ref: '#/components/parameters/applicationName'
+      responses:
+        '200':
+          description: Job scheduled successfuly
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Job'
+            requestBody:
+              content:
+                multipart/form-data:
+                  schema:
+                    type: object
+                    properties:
+                      transformations:
+                        schema:
+                          $ref: '#/components/schemas/Transformations'
+                      email:
+                        type: string
+                      fileName:
+                        type: string
+                        format: binary
+        '400':
+          description: Error messages include 'Email has not been confirmed', 'User does not have access to this application', 'No such application'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email has not been confirmed
+                    # TODO: examples don't show up, included possible messages in description
+                    # examples:
+                    #   email-not-confirmed:
+                    #     value: Email has not been confirmed
+                    #   no-access-to-app:
+                    #     value: User does not have access to this application
+                    #   no-app:
+                    #     value: No such application
+        '403':
+          description: Error messages include 'No x-api-key header is provided', 'No x-application-name header is provided', 'No more requests are available. Next requests available DATE'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    examples:
+                      no-header:
+                        value: No x-api-key header is provided
+                      no-key:
+                        value: No x-application-name header is provided
+        '404':
+          description: Error messages include 'No user found for provided token', 'No plan found PLAN_NAME'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No user found for provided token
+      security:
+        - ApiKeyAuth: []
+  /rest_api/deep_image/result/{jobHash}:
+    get:
+      summary: Returns job result.
+      parameters:
+        - $ref: '#/components/parameters/jobHash'
+        - $ref: '#/components/parameters/applicationName'
+      responses:
+        '200':
+          description:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobResult'
+      security:
+        - ApiKeyAuth: []
+
+  /rest_api/deep_image/configuration:
+    get:
+      summary: Returns available application configuration regarding to user's current plan.
+      parameters:
+        - $ref: '#/components/parameters/applicationName'
+      responses:
+        '200':
+          description:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Configurations'
+      security:
+        - ApiKeyAuth: []
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+  parameters:
+    applicationName:
+      in: header
+      name: x-application-name
+      schema:
+        type: string
+        default: 'deep_image'
+      required: true
+    jobHash:
+      in: path
+      name: jobHash
+      schema:
+        type: string
+
+  schemas:
+    AuthError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: No Authorization header is present
+    Job:
+      type: object
+      properties:
+        job:
+          type: string
+    JobResult:
+      type: object
+      properties:
+        status:
+          type: string
+        result_url:
+          type: string
+    Configurations:
+      type: array
+      items:
+        $ref: '#/components/schemas/Configuration'
+    Configuration:
+      type: object
+      properties:
+        payload:
+          type: object
+          properties:
+            active_models:
+              type: array
+              items:
+                type: string
+                example: [zoom2]
+
+    Transformations:
+      type: array
+      items:
+        $ref: '#/components/schemas/Transformation'
+        example: [zoom2]
+    Transformation:
+      type: string
+      enum:
+        - zoom2
+        - zoom3
+        - zoom4
+        - zoom2-jpg50
+        - zoom3-jpg50
+        - zoom4-jpg50
+        - ganzoom2
+        - ganzoom3
+        - ganzoom4
+        - ganzoom2-jpg90
+        - ganzoom3-jpg90
+        - ganzoom4-jpg90
+        - ganzoom4-jpg50
+        - jpg
